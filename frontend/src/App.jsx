@@ -1,5 +1,3 @@
-// frontend/src/App.jsx
-
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
