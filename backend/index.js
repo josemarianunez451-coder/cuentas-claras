@@ -1,24 +1,24 @@
-// backend/index.js
-require('dotenv').config(); // Para leer las variables de .env
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('./config/db');
 
-// Crea la aplicación de Express
+// Conectar a la base de datos
+connectDB();
+
 const app = express();
 
 // Middlewares
-app.use(cors({ origin: 'http://localhost:5173' })); // Permite peticiones del frontend
-app.use(express.json()); // Permite a Express entender JSON en el body de las peticiones
+app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(express.json());
 
-// UNA RUTA DE PRUEBA BÁSICA
-app.get('/api', (req, res) => {
-  res.json({ message: '¡El backend está funcionando correctamente!' });
-});
+app.get('/api', (req, res) => res.json({ msg: 'API funcionando' }));
 
-// Define el puerto
+// CORRECCIÓN IMPORTANTE: Cambiado 'Groups' a 'groups' (minúscula)
+app.use('/api/groups', require('./routes/groupsr'));
+
 const PORT = process.env.PORT || 4000;
 
-// Inicia el servidor
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
