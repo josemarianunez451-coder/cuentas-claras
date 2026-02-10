@@ -19,7 +19,7 @@ const GroupPage = () => {
       try {
         const token = await getToken();
         // Nota: Asegúrate de que la URL coincida con tu backend
-        const response = await axios.get(`http://localhost:4000/api/groups/${groupId}`, {
+        const response = await axios.get(`/api/groups/${groupId}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setGroup(response.data);

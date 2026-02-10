@@ -18,7 +18,7 @@ const DashboardPage = () => {
   const [newGroupName, setNewGroupName] = useState("");
 
   // URL del Backend (Asegúrate de que coincida con tu puerto)
-  const API_URL = "http://localhost:4000/api/groups";
+  const API_URL = "/api/groups";
 
   // 1. Función para cargar los grupos desde el Backend
   const fetchGroups = async () => {

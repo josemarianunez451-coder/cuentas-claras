@@ -9,7 +9,7 @@ connectDB();
 const app = express();
 
 // Middlewares
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 app.get('/api', (req, res) => res.json({ msg: 'API funcionando' }));
