@@ -27,9 +27,19 @@ const DashboardPage = () => {
       const response = await axios.get(API_URL, {
         headers: { Authorization: `Bearer ${token}` } // Enviamos el token en la cabecera
       });
-      setGroups(response.data);
+     console.log("Respuesta del servidor:", response.data); // <--- AÑADE ESTO
+
+
+       if (Array.isArray(response.data)) {
+        setGroups(response.data);
+      } else {
+        console.error("La respuesta no es un array:", response.data);
+        setGroups([]); // Si no es array, lo dejamos vacío para que no rompa
+      }
+      
     } catch (error) {
       console.error("Error al cargar grupos:", error);
+      setGroups([]); // Evita que quede como undefined
     } finally {
       setLoading(false);
     }
