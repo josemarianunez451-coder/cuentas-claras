@@ -2,7 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // Añadimos Navigate
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
-import Layout from './components/Layout';
+import Layout from './components/layout';
 import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
 import SignInPage from './pages/SignInPage';
