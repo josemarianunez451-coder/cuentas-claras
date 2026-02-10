@@ -44,8 +44,35 @@ const getUserGroups = async (req, res) => {
     res.status(500).send('Error del Servidor');
   }
 };
+const getGroupById = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.auth.userId;
+
+    // Buscar el grupo por ID
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({ msg: 'Grupo no encontrado' });
+    }
+
+    // Seguridad: Verificar que el usuario sea miembro del grupo
+    const isMember = group.members.some(member => member.userId === userId);
+    
+    if (!isMember) {
+      return res.status(403).json({ msg: 'No tienes permiso para ver este grupo' });
+    }
+
+    res.json(group);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error en el servidor');
+  }
+};
+
 
 module.exports = {
   createGroup,
-  getUserGroups, // ¡Importante exportar esto!
+  getUserGroups,
+  getGroupById, // ¡Importante exportar esto!
 };
