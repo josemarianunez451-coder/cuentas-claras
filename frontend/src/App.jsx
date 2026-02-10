@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
+import GroupPage from './pages/GroupPage';
 
 function App() {
   return (
@@ -22,6 +23,11 @@ function App() {
               </SignedOut>
             </>
           } />
+          <Route path="/group/:groupId" element={
+            <SignedIn>
+              <GroupPage />
+            </SignedIn>
+} />
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
         </Routes>

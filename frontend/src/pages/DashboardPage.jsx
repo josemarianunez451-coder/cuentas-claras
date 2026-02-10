@@ -1,10 +1,13 @@
-// frontend/src/pages/DashboardPage.jsx
 import { useState, useEffect } from "react";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import axios from "axios";
-import { Plus, Users, ArrowRight } from "lucide-react"; // Iconos bonitos
+import { Plus, Users, ArrowRight } from "lucide-react"; 
+import { useNavigate } from "react-router-dom";
+
+
 
 const DashboardPage = () => {
+  const navigate = useNavigate(); 
   const { user } = useUser();
   const { getToken } = useAuth(); // Hook para obtener el token de seguridad
   
@@ -102,10 +105,14 @@ const DashboardPage = () => {
           </button>
         </div>
       ) : (
-        // Grid de Grupos
+       // Grid de Grupos
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {groups.map((group) => (
-            <div key={group._id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow p-6 flex flex-col justify-between h-48 cursor-pointer group">
+            <div 
+              key={group._id} 
+              onClick={() => navigate(`/group/${group._id}`)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow p-6 flex flex-col justify-between h-48 cursor-pointer group"
+            >
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="bg-blue-100 p-2 rounded-lg">
