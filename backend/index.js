@@ -12,13 +12,19 @@ const app = express();
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
-app.get('/api', (req, res) => res.json({ msg: 'API funcionando' }));
+app.get('/api', (req, res) => {
+    res.json({ 
+        success: true,
+        message: 'Backend de Cuentas Claras funcionando en Vercel',
+        env: process.env.NODE_ENV
+    });
+});
+
 app.get('/', (req, res) => res.json({ msg: 'Backend Raíz funcionando' }));
-app.get('/api', (req, res) => res.json({ msg: 'API funcionando' }));
 
 
 // CORRECCIÓN IMPORTANTE: Cambiado 'Groups' a 'groups' (minúscula)
-app.use('/api/groups', require('./routes/groupsr'));
+app.use('/api/groups', require('./routes/groups'));
 
 const PORT = process.env.PORT || 4000;
 
