@@ -1,13 +1,11 @@
 {
-  "name": "frontend",
+  "name": "cuentas-claras",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "npm install --prefix frontend && npm run build --prefix frontend",
+    "install": "npm install --prefix frontend && npm install --prefix backend"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.56.2",

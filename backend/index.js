@@ -22,10 +22,14 @@ app.get('/api', (req, res) => {
 
 app.get('/', (req, res) => res.json({ msg: 'Backend Raíz funcionando' }));
 
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
 // CORRECCIÓN IMPORTANTE: Cambiado 'Groups' a 'groups' (minúscula)
 app.use('/api/groups', require('./routes/groupsr'));
 app.use('/api/expenses', require('./routes/expenses'));
+
+app.use('/groups', require('./routes/groupsr'));
+app.use('/expenses', require('./routes/expenses'));
 
 const PORT = process.env.PORT || 4000;
 
