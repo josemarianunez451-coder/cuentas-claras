@@ -4,7 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 
 // Conectar a la base de datos
-connectDB();
+connectDB().catch(err => console.log(err));
 
 const app = express();
 
