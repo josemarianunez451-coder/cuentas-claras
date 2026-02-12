@@ -8,5 +8,6 @@ router.use(ClerkExpressRequireAuth());
 
 router.post('/', addExpense);
 router.get('/group/:groupId', getGroupExpenses);
+router.patch('/:id/settle', settleExpense); 
 
 module.exports = router;

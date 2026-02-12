@@ -77,18 +77,19 @@ const GroupPage = () => {
 
   // 3. Marcar un gasto como saldado/pagado
   const handleSettleExpense = async (expenseId) => {
-    if (!window.confirm("¿Marcar este gasto como pagado? Dejará de contar para las deudas actuales.")) return;
-    try {
-      const token = await getToken();
-      // Asumimos que crearemos esta ruta en el backend pronto
-      await axios.patch(`/api/expenses/${expenseId}/settle`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      await fetchData();
-    } catch (err) {
-      alert("Error al actualizar el gasto");
-    }
-  };
+  if (!window.confirm("¿Marcar este gasto como pagado?")) return;
+  try {
+    const token = await getToken();
+    // Verifica que la ruta empiece con /api
+    await axios.patch(`/api/expenses/${expenseId}/settle`, {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    await fetchData(); // Recarga los datos para actualizar los saldos
+  } catch (err) {
+    console.error(err);
+    alert("Error al actualizar el gasto");
+  }
+};
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
