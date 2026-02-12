@@ -100,14 +100,21 @@ const GroupPage = () => {
 
       {/* Header del Grupo */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-black text-gray-900">{group.name}</h1>
-            <div className="flex items-center text-gray-500 bg-gray-50 w-fit px-3 py-1 rounded-full border border-gray-100">
-              <Users className="w-4 h-4 mr-2 text-blue-500" />
-              <span className="text-sm font-medium">{group.members.length} miembros en total</span>
-            </div>
-          </div>
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="space-y-2">
+      <h1 className="text-3xl md:text-4xl font-black text-gray-900">{group.name}</h1>
+      <div className="flex flex-wrap gap-2 mt-2">
+        <div className="flex items-center text-gray-500 bg-gray-50 w-fit px-3 py-1 rounded-full border border-gray-100">
+          <Users className="w-4 h-4 mr-2 text-blue-500" />
+          <span className="text-sm font-medium">{group.members.length} miembros</span>
+        </div>
+        {/* NUEVO: Muestra el total gastado por el grupo */}
+        <div className="flex items-center text-gray-500 bg-green-50 w-fit px-3 py-1 rounded-full border border-green-100">
+          <DollarSign className="w-4 h-4 mr-1 text-green-600" />
+          <span className="text-sm font-bold text-green-700">Total: ${group.totalAmount?.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
@@ -167,21 +174,36 @@ const GroupPage = () => {
         </div>
 
         {/* Columna Lateral: Miembros */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">Miembros del grupo</h2>
-            <div className="space-y-3">
-              {group.members.map((member, index) => (
-                <div key={index} className="flex items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs mr-3 shadow-sm">
-                    {member.userId === currentUser?.id ? "TÚ" : member.userId.slice(-2).toUpperCase()}
-                  </div>
-                  <span className="text-sm font-bold text-gray-700">
-                    {member.userId === currentUser?.id ? "Tú (Administrador)" : `Usuario ${member.userId.slice(-5)}`}
-                  </span>
-                </div>
-              ))}
+       <div className="space-y-6">
+  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+    <h2 className="text-lg font-bold text-gray-800 mb-4">Estado de Cuentas</h2>
+    <div className="space-y-3">
+      {group.members.map((member, index) => (
+        <div key={index} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] mr-3 shadow-sm">
+                {member.userId === currentUser?.id ? "TÚ" : member.userId.slice(-2).toUpperCase()}
+              </div>
+              <span className="text-sm font-bold text-gray-700">
+                {member.userId === currentUser?.id ? "Tú" : `Usuario ${member.userId.slice(-5)}`}
+              </span>
             </div>
+          </div>
+          
+          {/* NUEVO: Visualización del Saldo Calculado por el Backend */}
+          <div className="flex justify-between items-end pt-2 border-t border-gray-200/50">
+            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Saldo</span>
+            <span className={`text-sm font-black ${member.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {member.balance >= 0 
+                ? `+ $${member.balance?.toFixed(2)}` 
+                : `- $${Math.abs(member.balance)?.toFixed(2)}`
+              }
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
             <button className="w-full mt-6 py-3 px-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-sm hover:border-blue-400 hover:text-blue-500 transition-all">
               + Invitar amigos
             </button>
@@ -239,7 +261,7 @@ const GroupPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="flex-[2] py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50"
+                  className="flex-2 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50"
                 >
                   {isSubmitting ? "Guardando..." : "Confirmar Gasto"}
                 </button>

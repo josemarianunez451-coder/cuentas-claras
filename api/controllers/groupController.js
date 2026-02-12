@@ -1,5 +1,5 @@
 const Group = require('../models/Group');
-
+const Expense = require('../models/Expense'); 
 // @desc    Crear un nuevo grupo
 // @route   POST /api/groups
 // @access  Privado
@@ -49,27 +49,48 @@ const getGroupById = async (req, res) => {
     const groupId = req.params.id;
     const userId = req.auth.userId;
 
-    // Buscar el grupo por ID
-    const group = await Group.findById(groupId);
+    const group = await Group.findById(groupId).lean(); // .lean() para poder editar el objeto
 
-    if (!group) {
-      return res.status(404).json({ msg: 'Grupo no encontrado' });
-    }
+    if (!group) return res.status(404).json({ msg: 'Grupo no encontrado' });
 
-    // Seguridad: Verificar que el usuario sea miembro del grupo
     const isMember = group.members.some(member => member.userId === userId);
-    
-    if (!isMember) {
-      return res.status(403).json({ msg: 'No tienes permiso para ver este grupo' });
-    }
+    if (!isMember) return res.status(403).json({ msg: 'No autorizado' });
 
-    res.json(group);
+    // --- LÓGICA DE CÁLCULO DE DEUDAS ---
+    const expenses = await Expense.find({ groupId });
+    
+    // 1. Calcular total gastado en el grupo
+    const totalAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    
+    // 2. Calcular cuánto debería haber puesto cada uno (promedio)
+    const averagePerPerson = group.members.length > 0 ? totalAmount / group.members.length : 0;
+
+    // 3. Calcular el saldo de cada miembro (Lo que puso - Lo que debía poner)
+    const membersWithBalance = group.members.map(member => {
+      const paidByThisMember = expenses
+        .filter(exp => exp.paidBy === member.userId)
+        .reduce((sum, exp) => sum + exp.amount, 0);
+
+      return {
+        ...member,
+        totalPaid: paidByThisMember,
+        balance: paidByThisMember - averagePerPerson // Si es positivo, le deben. Si es negativo, debe.
+      };
+    });
+
+    // Añadimos los cálculos al objeto que enviamos al frontend
+    res.json({
+      ...group,
+      members: membersWithBalance,
+      totalAmount,
+      averagePerPerson
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).send('Error en el servidor');
   }
 };
-
 
 module.exports = {
   createGroup,
