@@ -1,6 +1,7 @@
 // api/controllers/groupController.js
 const Group = require('../models/Group');
 const Expense = require('../models/Expense'); // <--- ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ
+const { clerkClient } = require('@clerk/clerk-sdk-node'); // <--- 2. ASEGÚRATE DE ESTO
 
 // @desc    Crear un nuevo grupo
 const createGroup = async (req, res) => {
