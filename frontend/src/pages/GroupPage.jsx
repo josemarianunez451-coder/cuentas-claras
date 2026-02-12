@@ -204,9 +204,15 @@ const GroupPage = () => {
         </div>
       ))}
     </div>
-            <button className="w-full mt-6 py-3 px-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-sm hover:border-blue-400 hover:text-blue-500 transition-all">
-              + Invitar amigos
-            </button>
+          <button 
+            onClick={() => {
+            navigator.clipboard.writeText(groupId);
+            alert("¡ID del grupo copiado! Pásaselo a tu amigo para que se una: " + groupId);
+            }}
+            className="w-full mt-6 py-3 px-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-sm hover:border-blue-400 hover:text-blue-500 transition-all"
+            >
+            + Invitar amigos (Copiar ID)
+          </button>
           </div>
         </div>
       </div>

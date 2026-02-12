@@ -92,8 +92,38 @@ const getGroupById = async (req, res) => {
   }
 };
 
+const joinGroup = async (req, res) => {
+  try {
+    const { groupId } = req.body;
+    const userId = req.auth.userId;
+
+    const group = await Group.findById(groupId);
+
+    if (!group) {
+      return res.status(404).json({ msg: 'Grupo no encontrado' });
+    }
+
+    // Verificar si el usuario ya es miembro
+    const alreadyMember = group.members.some(m => m.userId === userId);
+    if (alreadyMember) {
+      return res.status(400).json({ msg: 'Ya eres miembro de este grupo' });
+    }
+
+    // Añadir al usuario a la lista de miembros
+    group.members.push({ userId });
+    await group.save();
+
+    res.json(group);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error al unirse al grupo');
+  }
+};
+
 module.exports = {
   createGroup,
   getUserGroups,
-  getGroupById, // ¡Importante exportar esto!
+  getGroupById, 
+  joinGroup, 
+
 };
