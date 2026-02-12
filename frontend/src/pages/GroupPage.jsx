@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
-import { ArrowLeft, Users, Receipt, Plus, Calendar, DollarSign, X } from 'lucide-react';
+import { ArrowLeft, Users, Receipt, Plus, Calendar, DollarSign, X, CheckCircle, MessageSquare, Info } from 'lucide-react';
 
 const GroupPage = () => {
   const { groupId } = useParams();
@@ -18,7 +18,7 @@ const GroupPage = () => {
   
   // Estado para el Modal de Gastos
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newExpense, setNewExpense] = useState({ description: "", amount: "" });
+  const [newExpense, setNewExpense] = useState({ description: "", amount: "", comment: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 1. Cargar datos del grupo y gastos
@@ -27,7 +27,6 @@ const GroupPage = () => {
       const token = await getToken();
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Peticiones en paralelo
       const [groupRes, expensesRes] = await Promise.all([
         axios.get(`/api/groups/${groupId}`, { headers }),
         axios.get(`/api/expenses/group/${groupId}`, { headers })
@@ -59,13 +58,13 @@ const GroupPage = () => {
         { 
           description: newExpense.description, 
           amount: Number(newExpense.amount), 
+          comment: newExpense.comment, // Comentario opcional
           groupId 
         }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );
       
-      // Reiniciar y recargar
-      setNewExpense({ description: "", amount: "" });
+      setNewExpense({ description: "", amount: "", comment: "" });
       setIsModalOpen(false);
       await fetchData(); 
     } catch (err) {
@@ -73,6 +72,21 @@ const GroupPage = () => {
       alert("Error al guardar el gasto");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // 3. Marcar un gasto como saldado/pagado
+  const handleSettleExpense = async (expenseId) => {
+    if (!window.confirm("¿Marcar este gasto como pagado? Dejará de contar para las deudas actuales.")) return;
+    try {
+      const token = await getToken();
+      // Asumimos que crearemos esta ruta en el backend pronto
+      await axios.patch(`/api/expenses/${expenseId}/settle`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await fetchData();
+    } catch (err) {
+      alert("Error al actualizar el gasto");
     }
   };
 
@@ -90,31 +104,33 @@ const GroupPage = () => {
   );
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 pb-20">
       
-      {/* Botón Volver */}
       <Link to="/dashboard" className="inline-flex items-center text-gray-500 hover:text-blue-600 transition-colors group">
         <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
         Volver al Dashboard
       </Link>
 
-      {/* Header del Grupo */}
+      {/* Header del Grupo con Totales */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-    <div className="space-y-2">
-      <h1 className="text-3xl md:text-4xl font-black text-gray-900">{group.name}</h1>
-      <div className="flex flex-wrap gap-2 mt-2">
-        <div className="flex items-center text-gray-500 bg-gray-50 w-fit px-3 py-1 rounded-full border border-gray-100">
-          <Users className="w-4 h-4 mr-2 text-blue-500" />
-          <span className="text-sm font-medium">{group.members.length} miembros</span>
-        </div>
-        {/* NUEVO: Muestra el total gastado por el grupo */}
-        <div className="flex items-center text-gray-500 bg-green-50 w-fit px-3 py-1 rounded-full border border-green-100">
-          <DollarSign className="w-4 h-4 mr-1 text-green-600" />
-          <span className="text-sm font-bold text-green-700">Total: ${group.totalAmount?.toLocaleString()}</span>
-        </div>
-      </div>
-    </div>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900">{group.name}</h1>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex items-center text-gray-500 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 text-xs font-bold">
+                <Users className="w-3 h-3 mr-1 text-blue-500" />
+                {group.members.length} miembros
+              </div>
+              <div className="flex items-center text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 text-xs font-bold">
+                <DollarSign className="w-3 h-3 mr-1" />
+                Vigente: ${group.currentActiveAmount?.toLocaleString()}
+              </div>
+              <div className="flex items-center text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 text-xs font-bold" title="Total histórico incluyendo pagados">
+                <Calendar className="w-3 h-3 mr-1" />
+                Histórico: ${group.totalHistoricalAmount?.toLocaleString()}
+              </div>
+            </div>
+          </div>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
@@ -127,7 +143,7 @@ const GroupPage = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* Columna Principal: Gastos */}
+        {/* Historial de Gastos */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-50">
@@ -139,32 +155,40 @@ const GroupPage = () => {
 
             <div className="divide-y divide-gray-50">
               {expenses.length === 0 ? (
-                <div className="p-12 text-center">
-                  <div className="bg-gray-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <DollarSign className="w-8 h-8 text-gray-300" />
-                  </div>
-                  <p className="text-gray-500 font-medium">No hay gastos registrados aún.</p>
-                  <p className="text-sm text-gray-400">Comienza añadiendo el primero.</p>
-                </div>
+                <div className="p-12 text-center text-gray-400">No hay gastos aún.</div>
               ) : (
                 expenses.map((expense) => (
-                  <div key={expense._id} className="p-4 md:p-6 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+                  <div key={expense._id} className={`p-6 transition-all flex items-center justify-between group ${expense.isSettled ? 'bg-gray-50/50 opacity-60' : 'hover:bg-gray-50'}`}>
                     <div className="flex items-center space-x-4">
-                      <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-blue-100 transition-colors">
-                        <Receipt className="w-6 h-6 text-blue-600" />
+                      <div className={`p-3 rounded-xl ${expense.isSettled ? 'bg-gray-200 text-gray-500' : 'bg-blue-50 text-blue-600'}`}>
+                        {expense.isSettled ? <CheckCircle className="w-6 h-6" /> : <Receipt className="w-6 h-6" />}
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">{expense.description}</h3>
-                        <div className="flex items-center text-xs text-gray-400 mt-1">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {new Date(expense.date).toLocaleDateString()}
-                          <span className="mx-2">•</span>
-                          <span>Pagado por {expense.paidBy === currentUser?.id ? 'Ti' : 'otro miembro'}</span>
+                        <h3 className={`font-bold ${expense.isSettled ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
+                          {expense.description}
+                        </h3>
+                        <div className="flex flex-col text-xs text-gray-400 mt-1 space-y-1">
+                          <span className="font-bold text-gray-600">
+                            Pagado por {group.userNames?.[expense.paidBy] || "Usuario"}
+                          </span>
+                          {expense.comment && (
+                            <span className="flex items-center italic text-blue-400">
+                              <MessageSquare className="w-3 h-3 mr-1" /> {expense.comment}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-2">
                       <p className="text-lg font-black text-gray-900">${expense.amount.toLocaleString()}</p>
+                      {!expense.isSettled && (
+                        <button 
+                          onClick={() => handleSettleExpense(expense._id)}
+                          className="text-[10px] bg-white border border-gray-200 px-2 py-1 rounded-md font-bold text-gray-400 hover:text-green-600 hover:border-green-200 transition-colors"
+                        >
+                          Marcar pagado
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))
@@ -173,105 +197,95 @@ const GroupPage = () => {
           </div>
         </div>
 
-        {/* Columna Lateral: Miembros */}
-       <div className="space-y-6">
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-    <h2 className="text-lg font-bold text-gray-800 mb-4">Estado de Cuentas</h2>
-    <div className="space-y-3">
-      {group.members.map((member, index) => (
-        <div key={index} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[10px] mr-3 shadow-sm">
-                {member.userId === currentUser?.id ? "TÚ" : member.userId.slice(-2).toUpperCase()}
-              </div>
-              <span className="text-sm font-bold text-gray-700">
-                {member.userId === currentUser?.id ? "Tú" : `Usuario ${member.userId.slice(-5)}`}
-              </span>
+        {/* Lado Derecho: Saldos y Pagos Eficientes */}
+        <div className="space-y-6">
+          {/* Estado de Cuentas */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-800 mb-4">Estado de Cuentas (Vigente)</h2>
+            <div className="space-y-3">
+              {group.members.map((member, index) => (
+                <div key={index} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-gray-700">{member.name}</span>
+                    <span className={`text-sm font-black ${member.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {member.balance >= 0 ? `+ $${member.balance.toFixed(2)}` : `- $${Math.abs(member.balance).toFixed(2)}`}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          
-          {/* NUEVO: Visualización del Saldo Calculado por el Backend */}
-          <div className="flex justify-between items-end pt-2 border-t border-gray-200/50">
-            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Saldo</span>
-            <span className={`text-sm font-black ${member.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {member.balance >= 0 
-                ? `+ $${member.balance?.toFixed(2)}` 
-                : `- $${Math.abs(member.balance)?.toFixed(2)}`
-              }
-            </span>
+
+          {/* Liquidación Eficiente (Pagos sugeridos) */}
+          <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-100 p-6 text-white">
+            <div className="flex items-center gap-2 mb-4">
+              <Info className="w-5 h-5 text-blue-200" />
+              <h2 className="text-lg font-black">Pagos sugeridos</h2>
+            </div>
+            <div className="space-y-3">
+              {group.suggestedPayments?.length === 0 ? (
+                <p className="text-sm text-blue-100 italic">No hay deudas pendientes.</p>
+              ) : (
+                group.suggestedPayments?.map((p, idx) => (
+                  <div key={idx} className="bg-white/10 p-3 rounded-xl border border-white/10 text-sm">
+                    <span className="font-bold">{p.from}</span> debe pagar <br/>
+                    <span className="text-xl font-black text-blue-200">${p.amount.toLocaleString()}</span> a <br/>
+                    <span className="font-bold">{p.to}</span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+
           <button 
             onClick={() => {
-            navigator.clipboard.writeText(groupId);
-            alert("¡ID del grupo copiado! Pásaselo a tu amigo para que se una: " + groupId);
+              navigator.clipboard.writeText(groupId);
+              alert("ID copiado: " + groupId);
             }}
-            className="w-full mt-6 py-3 px-4 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 font-bold text-sm hover:border-blue-400 hover:text-blue-500 transition-all"
-            >
+            className="w-full py-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 font-bold text-sm hover:border-blue-300 hover:text-blue-500 transition-all"
+          >
             + Invitar amigos (Copiar ID)
           </button>
-          </div>
         </div>
       </div>
 
-      {/* Modal Añadir Gasto */}
+      {/* Modal de Nuevo Gasto */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="bg-blue-600 p-6 text-white flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Nuevo Gasto</h2>
-              <button onClick={() => setIsModalOpen(false)} className="hover:bg-blue-500 p-1 rounded-full transition-colors">
-                <X className="w-6 h-6" />
-              </button>
+              <h2 className="text-2xl font-bold">Anotar Gasto</h2>
+              <button onClick={() => setIsModalOpen(false)}><X/></button>
             </div>
-            
             <form onSubmit={handleAddExpense} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">¿Qué compraste?</label>
-                <input 
-                  type="text" 
-                  placeholder="Ej: Pizza, Nafta, Supermercado..." 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                  value={newExpense.description}
-                  onChange={e => setNewExpense({...newExpense, description: e.target.value})}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">¿Cuánto costó?</label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
-                  <input 
-                    type="number" 
-                    placeholder="0.00" 
-                    className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    value={newExpense.amount}
-                    onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 py-3 px-4 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="flex-2 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50"
-                >
-                  {isSubmitting ? "Guardando..." : "Confirmar Gasto"}
-                </button>
-              </div>
+              <input 
+                placeholder="¿Qué compraste?" 
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                value={newExpense.description}
+                onChange={e => setNewExpense({...newExpense, description: e.target.value})}
+                required
+              />
+              <input 
+                type="number" 
+                placeholder="Monto" 
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none font-bold"
+                value={newExpense.amount}
+                onChange={e => setNewExpense({...newExpense, amount: e.target.value})}
+                required
+              />
+              <textarea 
+                placeholder="Comentario opcional..." 
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm"
+                value={newExpense.comment}
+                onChange={e => setNewExpense({...newExpense, comment: e.target.value})}
+              />
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg disabled:opacity-50"
+              >
+                {isSubmitting ? "Guardando..." : "Confirmar"}
+              </button>
             </form>
           </div>
         </div>
