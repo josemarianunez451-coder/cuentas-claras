@@ -1,11 +1,10 @@
-// backend/controllers/expenseController.js
+// api/controllers/expenseController.js
 const Expense = require('../models/Expense');
 
-// @desc    Añadir un nuevo gasto a un grupo
-// @route   POST /api/expenses
+// 1. AÑADIR GASTO
 const addExpense = async (req, res) => {
   try {
-    const { description, amount, groupId } = req.body;
+    const { description, amount, groupId, comment } = req.body;
     const userId = req.auth.userId;
 
     if (!description || !amount || !groupId) {
@@ -17,6 +16,7 @@ const addExpense = async (req, res) => {
       amount,
       groupId,
       paidBy: userId,
+      comment: comment || ""
     });
 
     const expense = await newExpense.save();
@@ -27,6 +27,7 @@ const addExpense = async (req, res) => {
   }
 };
 
+// 2. OBTENER GASTOS DE UN GRUPO
 const getGroupExpenses = async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -37,6 +38,8 @@ const getGroupExpenses = async (req, res) => {
     res.status(500).send('Error del Servidor');
   }
 };
+
+// 3. MARCAR COMO PAGADO (La función que faltaba)
 const settleExpense = async (req, res) => {
   try {
     const { id } = req.params;
@@ -49,16 +52,16 @@ const settleExpense = async (req, res) => {
     expense.isSettled = true;
     await expense.save();
 
-    res.json({ msg: 'Gasto saldado con éxito' });
+    res.json({ msg: 'Gasto marcado como pagado', expense });
   } catch (err) {
     console.error(err);
     res.status(500).send('Error del Servidor');
   }
 };
 
-// ¡REVISA QUE ESTÉ EN EL EXPORT!
+// EXPORTAR TODAS LAS FUNCIONES
 module.exports = {
   addExpense,
   getGroupExpenses,
-  settleExpense, // <--- Debe estar aquí
+  settleExpense, 
 };
