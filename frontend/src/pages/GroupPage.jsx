@@ -109,29 +109,38 @@ const GroupPage = () => {
   };
 
   // 5. Generar y copiar mensaje de WhatsApp
+  
   const copyWhatsAppMessage = () => {
+    if (!group) return;
+
     let msg = `*CUENTAS CLARAS: ${group.name.toUpperCase()}* 📊\n\n`;
-    msg += `Bueno, para dejar las cuentas claras hagamos lo siguiente...\n\n`;
+    msg += `¡Hola grupo! Para que nadie pierda plata y todos quedemos a mano de la forma más simple, acá está el resumen de las cuentas:\n\n`;
     
-    msg += `👤 *Lo que pagó cada uno:*\n`;
+    msg += `💰 *Gasto total del grupo:* $${group.currentActiveAmount?.toLocaleString()}\n`;
+    msg += `👤 *A cada uno le tocaba poner:* $${(group.currentActiveAmount / group.members.length).toLocaleString(undefined, {maximumFractionDigits: 0})}\n\n`;
+
+    msg += `✅ *Aportes reales de cada uno:*\n`;
     group.members.forEach(m => {
-      msg += `- ${m.name}: $${(m.totalPaid || 0).toLocaleString()}\n`;
+      msg += `- *${m.name}* puso: $${(m.totalPaid || 0).toLocaleString()}\n`;
     });
     
-    msg += `\n🚀 *Los movimientos más inteligentes para quedar libres de deuda son los siguientes:*\n`;
+    msg += `\n----------------------------------\n`;
+    msg += `🚀 *MOVIMIENTOS INTELIGENTES:*\n`;
+    msg += `_Para evitar que todos se pasen plata entre sí, la app calculó las transferencias mínimas necesarias para saldar la deuda:_\n\n`;
     
     if (group.suggestedPayments.length === 0) {
-      msg += `¡No hay deudas pendientes! Estamos todos a mano. 🥳\n`;
+      msg += `¡No hay deudas pendientes! Todos pusimos lo mismo. 🥳\n`;
     } else {
       group.suggestedPayments.forEach(p => {
-        msg += `- *${p.from}* debe pagar *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
+        msg += `- *${p.from}* debe transferir *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
       });
     }
 
+    msg += `\n*¡Con estos pagos ya quedamos todos en $0!* 🏁\n`;
     msg += `\n_Resumen generado por Cuentas Claras_`;
 
     navigator.clipboard.writeText(msg);
-    alert("¡Resumen redactado y copiado! Ya puedes pegarlo en WhatsApp.");
+    alert("¡Resumen redactado y copiado!");
   };
 
   if (loading) return (

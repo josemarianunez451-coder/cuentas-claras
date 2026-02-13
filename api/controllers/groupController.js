@@ -76,7 +76,12 @@ const getGroupById = async (req, res) => {
         .reduce((sum, e) => sum + (e.amount || 0), 0);
       
       const name = userNamesMap[m.userId] || `Usuario ${m.userId.slice(-4)}`;
-      return { userId: m.userId, name: name, balance: paid - average };
+      return {
+    userId: m.userId,
+    name: name,
+    totalPaid: paid, 
+    balance: paid - average
+  };
     });
 
     // --- PAGOS SUGERIDOS ---
