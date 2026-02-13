@@ -170,6 +170,7 @@ const GroupPage = () => {
                         </h3>
                         <div className="flex flex-col text-xs text-gray-400 mt-1 space-y-1">
                           <span className="font-bold text-gray-600">
+                            {/* IMPORTANTE: Usamos el objeto userNames que viene dentro de 'group' */}
                             Pagado por {group.userNames?.[expense.paidBy] || "Usuario"}
                           </span>
                           {expense.comment && (

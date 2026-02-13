@@ -48,20 +48,21 @@ const getGroupById = async (req, res) => {
     if (!group) return res.status(404).json({ msg: 'Grupo no encontrado' });
 
     // --- Obtener nombres (Con protección total) ---
+   const userIds = group.members.map(m => m.userId);
     const userNames = {};
+    
     try {
-      const userIds = group.members.map(m => m.userId);
-      // Solo intentamos si tenemos la clave configurada
-      if (process.env.CLERK_SECRET_KEY && userIds.length > 0) {
+      if (userIds.length > 0) {
         const clerkUsers = await clerkClient.users.getUserList({ userId: userIds });
         clerkUsers.data.forEach(u => {
-          userNames[u.id] = u.firstName || u.username || "Usuario";
+          // Lógica de prioridad: Nombre > Username > Email > ID acortado
+          const name = u.firstName || u.username || (u.emailAddresses[0]?.emailAddress.split('@')[0]) || `Usuario ${u.id.slice(-4)}`;
+          userNames[u.id] = name;
         });
       }
-    } catch (e) {
-      console.log("Aviso: No se pudieron cargar nombres de Clerk");
+    } catch (clerkErr) {
+      console.error("Fallo Clerk SDK:", clerkErr.message);
     }
-
     // --- Lógica de Gastos ---
     const allExpenses = await Expense.find({ groupId }).lean() || [];
     const activeExpenses = allExpenses.filter(e => !e.isSettled);
