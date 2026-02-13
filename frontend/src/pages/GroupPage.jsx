@@ -113,30 +113,33 @@ const GroupPage = () => {
   const copyWhatsAppMessage = () => {
     if (!group) return;
 
-    let msg = `*CUENTAS CLARAS: ${group.name.toUpperCase()}* 📊\n\n`;
-    msg += `¡Hola grupo! Para que nadie pierda plata y todos quedemos a mano de la forma más simple, acá está el resumen de las cuentas:\n\n`;
-    
-    msg += `💰 *Gasto total del grupo:* $${group.currentActiveAmount?.toLocaleString()}\n`;
-    msg += `👤 *A cada uno le tocaba poner:* $${(group.currentActiveAmount / group.members.length).toLocaleString(undefined, {maximumFractionDigits: 0})}\n\n`;
+    const cuotaJusta = group.currentActiveAmount / group.members.length;
 
-    msg += `✅ *Aportes reales de cada uno:*\n`;
+    let msg = `*CUENTAS CLARAS: ${group.name.toUpperCase()}* 📊\n\n`;
+    msg += `¡Hola grupo! Para que todos quedemos a mano de la forma más simple, acá está el resumen:\n\n`;
+    
+    msg += `💰 *Gasto total:* $${group.currentActiveAmount?.toLocaleString()}\n`;
+    msg += `📉 *Costo final por persona:* $${cuotaJusta.toLocaleString(undefined, {maximumFractionDigits: 0})}\n`; 
+    msg += `_(Este es el monto que todos habremos pagado realmente al final)_\n\n`;
+
+    msg += `✅ *¿Cuánto puso cada uno hasta ahora?*\n`;
     group.members.forEach(m => {
-      msg += `- *${m.name}* puso: $${(m.totalPaid || 0).toLocaleString()}\n`;
+      msg += `- *${m.name}*: $${(m.totalPaid || 0).toLocaleString()}\n`;
     });
     
     msg += `\n----------------------------------\n`;
-    msg += `🚀 *MOVIMIENTOS INTELIGENTES:*\n`;
-    msg += `_Para evitar que todos se pasen plata entre sí, la app calculó las transferencias mínimas necesarias para saldar la deuda:_\n\n`;
+    msg += `🚀 *MOVIMIENTOS PARA QUEDAR A MANO:*\n`;
+    msg += `_Con estas transferencias, los que pusieron de más recuperan su plata y todos terminamos habiendo pagado los $${cuotaJusta.toLocaleString(undefined, {maximumFractionDigits: 0})} que nos corresponden:_\n\n`;
     
     if (group.suggestedPayments.length === 0) {
-      msg += `¡No hay deudas pendientes! Todos pusimos lo mismo. 🥳\n`;
+      msg += `¡No hay deudas pendientes! 🥳\n`;
     } else {
       group.suggestedPayments.forEach(p => {
-        msg += `- *${p.from}* debe transferir *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
+        msg += `- *${p.from}* le transfiere *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
       });
     }
 
-    msg += `\n*¡Con estos pagos ya quedamos todos en $0!* 🏁\n`;
+    msg += `\n*¡Listo! Con esto las cuentas quedan cerradas.* 🏁\n`;
     msg += `\n_Resumen generado por Cuentas Claras_`;
 
     navigator.clipboard.writeText(msg);
