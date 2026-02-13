@@ -7,13 +7,13 @@ const { clerkClient } = require('@clerk/clerk-sdk-node');
 const getUserGroups = async (req, res) => {
   try {
     const userId = req.auth?.userId;
-    if (!userId) return res.status(401).json({ msg: 'No autenticado' });
+    if (!userId) return res.status(401).json({ msg: 'No autorizado' });
 
     const groups = await Group.find({ 'members.userId': userId }).sort({ createdAt: -1 });
     res.json(groups);
   } catch (err) {
     console.error("Error en getUserGroups:", err);
-    res.status(500).json({ msg: 'Error al obtener grupos', error: err.message });
+    res.status(500).json({ msg: 'Error al obtener grupos' });
   }
 };
 
@@ -22,7 +22,7 @@ const createGroup = async (req, res) => {
   try {
     const { name } = req.body;
     const userId = req.auth?.userId;
-    if (!name) return res.status(400).json({ msg: 'Nombre obligatorio' });
+    if (!name || !userId) return res.status(400).json({ msg: 'Datos incompletos' });
 
     const newGroup = new Group({
       name,
@@ -38,34 +38,31 @@ const createGroup = async (req, res) => {
   }
 };
 
-// 3. OBTENER DETALLE (Página de Grupo) con lógica de deudas
+// 3. OBTENER DETALLE (Saldos y Nombres)
 const getGroupById = async (req, res) => {
   try {
     const groupId = req.params.id;
     const userId = req.auth?.userId;
 
     const group = await Group.findById(groupId).lean();
-    if (!group) return res.status(404).json({ msg: 'No encontrado' });
+    if (!group) return res.status(404).json({ msg: 'Grupo no encontrado' });
 
-    const isMember = group.members.some(m => m.userId === userId);
-    if (!isMember) return res.status(403).json({ msg: 'Acceso denegado' });
-
-    // --- Obtener nombres de Clerk con SEGURIDAD TOTAL ---
+    // --- Obtener nombres (Con protección total) ---
     const userNames = {};
     try {
       const userIds = group.members.map(m => m.userId);
-      if (userIds.length > 0) {
+      // Solo intentamos si tenemos la clave configurada
+      if (process.env.CLERK_SECRET_KEY && userIds.length > 0) {
         const clerkUsers = await clerkClient.users.getUserList({ userId: userIds });
         clerkUsers.data.forEach(u => {
           userNames[u.id] = u.firstName || u.username || "Usuario";
         });
       }
-    } catch (clerkErr) {
-      console.error("Fallo Clerk SDK:", clerkErr.message);
-      // No cortamos la ejecución, seguimos con los IDs
+    } catch (e) {
+      console.log("Aviso: No se pudieron cargar nombres de Clerk");
     }
 
-    // --- Cálculos de Gastos ---
+    // --- Lógica de Gastos ---
     const allExpenses = await Expense.find({ groupId }).lean() || [];
     const activeExpenses = allExpenses.filter(e => !e.isSettled);
 
@@ -113,9 +110,8 @@ const getGroupById = async (req, res) => {
       currentActiveAmount,
       suggestedPayments
     });
-
   } catch (error) {
-    console.error("Error crítico:", error);
+    console.error("Error en getGroupById:", error);
     res.status(500).json({ msg: 'Error de servidor' });
   }
 };
