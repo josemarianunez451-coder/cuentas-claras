@@ -1,12 +1,17 @@
 // frontend/src/pages/GroupPage.jsx
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
-import { ArrowLeft, Users, Receipt, Plus, Calendar, DollarSign, X, CheckCircle, MessageSquare, Info } from 'lucide-react';
+import { 
+  ArrowLeft, Users, Receipt, Plus, Calendar, 
+  DollarSign, X, CheckCircle, MessageSquare, 
+  Info, Trash2, Share2 
+} from 'lucide-react';
 
 const GroupPage = () => {
   const { groupId } = useParams();
+  const navigate = useNavigate();
   const { getToken } = useAuth();
   const { user: currentUser } = useUser();
   
@@ -58,7 +63,7 @@ const GroupPage = () => {
         { 
           description: newExpense.description, 
           amount: Number(newExpense.amount), 
-          comment: newExpense.comment, // Comentario opcional
+          comment: newExpense.comment,
           groupId 
         }, 
         { headers: { Authorization: `Bearer ${token}` } }
@@ -75,21 +80,59 @@ const GroupPage = () => {
     }
   };
 
-  // 3. Marcar un gasto como saldado/pagado
+  // 3. Marcar un gasto como saldado
   const handleSettleExpense = async (expenseId) => {
-  if (!window.confirm("¿Marcar este gasto como pagado?")) return;
-  try {
-    const token = await getToken();
-    // Verifica que la ruta empiece con /api
-    await axios.patch(`/api/expenses/${expenseId}/settle`, {}, {
-      headers: { Authorization: `Bearer ${token}` }
+    if (!window.confirm("¿Marcar este gasto como pagado?")) return;
+    try {
+      const token = await getToken();
+      await axios.patch(`/api/expenses/${expenseId}/settle`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await fetchData();
+    } catch (err) {
+      alert("Error al actualizar el gasto");
+    }
+  };
+
+  // 4. Borrar el grupo completo
+  const handleDeleteGroup = async () => {
+    if (!window.confirm("¿ESTÁS SEGURO? Se borrará el grupo y todos sus gastos de forma permanente.")) return;
+    try {
+      const token = await getToken();
+      await axios.delete(`/api/groups/${groupId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      navigate("/dashboard");
+    } catch (err) {
+      alert(err.response?.data?.msg || "Error al eliminar el grupo");
+    }
+  };
+
+  // 5. Generar y copiar mensaje de WhatsApp
+  const copyWhatsAppMessage = () => {
+    let msg = `*CUENTAS CLARAS: ${group.name.toUpperCase()}* 📊\n\n`;
+    msg += `Bueno, para dejar las cuentas claras hagamos lo siguiente...\n\n`;
+    
+    msg += `👤 *Lo que pagó cada uno:*\n`;
+    group.members.forEach(m => {
+      msg += `- ${m.name}: $${(m.totalPaid || 0).toLocaleString()}\n`;
     });
-    await fetchData(); // Recarga los datos para actualizar los saldos
-  } catch (err) {
-    console.error(err);
-    alert("Error al actualizar el gasto");
-  }
-};
+    
+    msg += `\n🚀 *Los movimientos más inteligentes para quedar libres de deuda son los siguientes:*\n`;
+    
+    if (group.suggestedPayments.length === 0) {
+      msg += `¡No hay deudas pendientes! Estamos todos a mano. 🥳\n`;
+    } else {
+      group.suggestedPayments.forEach(p => {
+        msg += `- *${p.from}* debe pagar *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
+      });
+    }
+
+    msg += `\n_Resumen generado por Cuentas Claras_`;
+
+    navigator.clipboard.writeText(msg);
+    alert("¡Resumen redactado y copiado! Ya puedes pegarlo en WhatsApp.");
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -112,7 +155,7 @@ const GroupPage = () => {
         Volver al Dashboard
       </Link>
 
-      {/* Header del Grupo con Totales */}
+      {/* Header del Grupo */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
@@ -126,19 +169,40 @@ const GroupPage = () => {
                 <DollarSign className="w-3 h-3 mr-1" />
                 Vigente: ${group.currentActiveAmount?.toLocaleString()}
               </div>
-              <div className="flex items-center text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 text-xs font-bold" title="Total histórico incluyendo pagados">
+              <div className="flex items-center text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100 text-xs font-bold">
                 <Calendar className="w-3 h-3 mr-1" />
                 Histórico: ${group.totalHistoricalAmount?.toLocaleString()}
               </div>
             </div>
           </div>
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Añadir Gasto
-          </button>
+
+          <div className="flex flex-wrap gap-2">
+            <button 
+              onClick={copyWhatsAppMessage}
+              className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-green-100 transition-all active:scale-95 text-sm"
+            >
+              <Share2 className="w-4 h-4 mr-2" />
+              Compartir Resumen
+            </button>
+
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-95 text-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Añadir Gasto
+            </button>
+
+            {group.createdBy === currentUser?.id && (
+              <button 
+                onClick={handleDeleteGroup}
+                className="flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 font-bold py-3 px-4 rounded-xl transition-all active:scale-95 text-sm"
+                title="Borrar grupo"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -170,7 +234,6 @@ const GroupPage = () => {
                         </h3>
                         <div className="flex flex-col text-xs text-gray-400 mt-1 space-y-1">
                           <span className="font-bold text-gray-600">
-                            {/* IMPORTANTE: Usamos el objeto userNames que viene dentro de 'group' */}
                             Pagado por {group.userNames?.[expense.paidBy] || "Usuario"}
                           </span>
                           {expense.comment && (
@@ -201,7 +264,6 @@ const GroupPage = () => {
 
         {/* Lado Derecho: Saldos y Pagos Eficientes */}
         <div className="space-y-6">
-          {/* Estado de Cuentas */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-800 mb-4">Estado de Cuentas (Vigente)</h2>
             <div className="space-y-3">
@@ -218,7 +280,6 @@ const GroupPage = () => {
             </div>
           </div>
 
-          {/* Liquidación Eficiente (Pagos sugeridos) */}
           <div className="bg-blue-600 rounded-3xl shadow-xl shadow-blue-100 p-6 text-white">
             <div className="flex items-center gap-2 mb-4">
               <Info className="w-5 h-5 text-blue-200" />

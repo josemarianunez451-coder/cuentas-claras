@@ -131,4 +131,33 @@ const joinGroup = async (req, res) => {
   }
 };
 
-module.exports = { getUserGroups, createGroup, getGroupById, joinGroup };
+/**
+ * 5. ELIMINAR UN GRUPO (Y SUS GASTOS)
+ */
+const deleteGroup = async (req, res) => {
+  try {
+    const groupId = req.params.id;
+    const userId = req.auth?.userId;
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ msg: 'Grupo no encontrado' });
+
+    // Seguridad: Solo el creador puede borrar el grupo
+    if (group.createdBy !== userId) {
+      return res.status(403).json({ msg: 'Solo el administrador puede borrar este grupo' });
+    }
+
+    // 1. Borrar todos los gastos vinculados al grupo
+    await Expense.deleteMany({ groupId });
+
+    // 2. Borrar el grupo
+    await Group.findByIdAndDelete(groupId);
+
+    res.json({ msg: 'Grupo y gastos eliminados con éxito' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: 'Error al eliminar el grupo' });
+  }
+};
+
+module.exports = { getUserGroups, createGroup, getGroupById, joinGroup, deleteGroup };

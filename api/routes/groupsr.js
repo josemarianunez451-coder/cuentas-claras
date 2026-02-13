@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 // Importamos ambas funciones del controlador
-const { createGroup, getUserGroups, getGroupById, joinGroup } = require('../controllers/groupController');
+const { createGroup, getUserGroups, getGroupById, joinGroup, deleteGroup } = require('../controllers/groupController');
 const { ClerkExpressRequireAuth } = require('@clerk/clerk-sdk-node');
 
 // Proteger todas las rutas
@@ -16,5 +16,7 @@ router.get('/', getUserGroups);
 router.get('/:id', getGroupById);
 
 router.post('/join', joinGroup);
+
+router.delete('/:id', deleteGroup); 
 
 module.exports = router;
