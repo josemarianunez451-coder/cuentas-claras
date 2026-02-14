@@ -202,7 +202,7 @@ const GroupPage = () => {
     navigator.clipboard.writeText(msg);
     alert("¡Resumen redactado y copiado para WhatsApp!");
   };
-  
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
@@ -467,7 +467,7 @@ const GroupPage = () => {
                 <button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="flex-[2] py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex-2 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl shadow-xl shadow-blue-100 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {isSubmitting ? "Guardando..." : (editingId ? "Guardar Cambios" : "Confirmar Gasto")}
                 </button>

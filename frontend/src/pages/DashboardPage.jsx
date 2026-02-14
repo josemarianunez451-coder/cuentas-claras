@@ -191,7 +191,7 @@ const DashboardPage = () => {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancelar</button>
-                <button type="submit" disabled={!newGroupName.trim()} className="flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50">Crear Grupo</button>
+                <button type="submit" disabled={!newGroupName.trim()} className="flex-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50">Crear Grupo</button>
               </div>
             </form>
           </div>
@@ -221,7 +221,7 @@ const DashboardPage = () => {
               </div>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setIsJoinModalOpen(false)} className="flex-1 py-3 text-gray-500 font-bold hover:bg-gray-100 rounded-xl transition-colors">Cancelar</button>
-                <button type="submit" disabled={!joinGroupId.trim()} className="flex-[2] py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50">Unirme ahora</button>
+                <button type="submit" disabled={!joinGroupId.trim()} className="flex-2 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-100 transition-all disabled:opacity-50">Unirme ahora</button>
               </div>
             </form>
           </div>
