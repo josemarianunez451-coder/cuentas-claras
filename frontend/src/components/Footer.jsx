@@ -21,7 +21,6 @@ const Footer = () => {
           <div>
             <h4 className="font-black text-gray-900 mb-6 uppercase text-xs tracking-widest">Producto</h4>
             <ul className="space-y-4 text-sm font-bold text-gray-500">
-              <li><Link to="/features" className="hover:text-blue-600 transition-colors">Funcionalidades</Link></li>
               <li><Link to="/how-it-works" className="hover:text-blue-600 transition-colors">Cómo funciona</Link></li>
               <li><Link to="/dashboard" className="hover:text-blue-600 transition-colors">Mi Dashboard</Link></li>
             </ul>
@@ -45,15 +44,6 @@ const Footer = () => {
               <a href="#" className="bg-gray-50 p-3 rounded-xl text-gray-400 hover:text-blue-700 hover:bg-blue-50 transition-all"><Linkedin size={20}/></a>
             </div>
           </div>
-        </div>
-
-        <div className="border-t border-gray-50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-xs font-bold uppercase tracking-tighter">
-            © 2026 Cuentas Claras. Todos los derechos reservados.
-          </p>
-          <p className="text-gray-400 text-xs font-bold flex items-center gap-1">
-            Hecho con <Heart size={12} className="text-red-400 fill-current"/> por Jose Maria
-          </p>
         </div>
       </div>
     </footer>
