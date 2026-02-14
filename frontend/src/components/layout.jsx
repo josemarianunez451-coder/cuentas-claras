@@ -1,5 +1,6 @@
 import { UserButton, SignedIn, SignedOut } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
+import Footer from "./Footer";
 
 const Header = () => (
   <header className="bg-white shadow-md">
@@ -33,6 +34,7 @@ const Layout = ({ children }) => {
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         {children}
       </main>
+      <Footer />
     </div>
   );
 };
