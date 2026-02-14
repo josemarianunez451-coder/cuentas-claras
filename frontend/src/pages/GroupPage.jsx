@@ -168,26 +168,41 @@ const GroupPage = () => {
 
   // 8. Mensaje de WhatsApp
   const copyWhatsAppMessage = () => {
-    const cuota = group.currentActiveAmount / group.members.length;
+    if (!group) return;
+
+    const cuotaJusta = group.currentActiveAmount / group.members.length;
+
     let msg = `*CUENTAS CLARAS: ${group.name.toUpperCase()}* 📊\n\n`;
+    msg += `¡Hola grupo! Para que todos quedemos a mano de la forma más simple, acá está el resumen de las cuentas:\n\n`;
+    
     msg += `💰 *Gasto total:* $${group.currentActiveAmount?.toLocaleString()}\n`;
-    msg += `📉 *Costo por persona:* $${cuota.toLocaleString(undefined, {maximumFractionDigits:0})}\n\n`;
-    msg += `✅ *Aportes:*\n`;
+    msg += `📉 *Costo final por persona:* $${cuotaJusta.toLocaleString(undefined, {maximumFractionDigits: 0})}\n`; 
+    msg += `_(Este es el monto que todos habremos pagado realmente al final)_\n\n`;
+
+    msg += `✅ *Aportes reales de cada uno:*\n`;
     group.members.forEach(m => {
-      msg += `- ${m.name}: $${(m.totalPaid || 0).toLocaleString()}\n`;
+      msg += `- *${m.name}* puso: $${(m.totalPaid || 0).toLocaleString()}\n`;
     });
-    msg += `\n🚀 *MOVIMIENTOS INTELIGENTES:*\n`;
+    
+    msg += `\n----------------------------------\n`;
+    msg += `🚀 *MOVIMIENTOS INTELIGENTES:*\n`;
+    msg += `_La app calculó las transferencias mínimas para evitar que todos se pasen plata entre sí:_\n\n`;
+    
     if (group.suggestedPayments.length === 0) {
-      msg += `¡Todo saldado! 🥳\n`;
+      msg += `¡No hay deudas pendientes! Todos pusimos lo mismo. 🥳\n`;
     } else {
       group.suggestedPayments.forEach(p => {
-        msg += `- *${p.from}* -> *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
+        msg += `- *${p.from}* debe transferir *$${p.amount.toLocaleString()}* a *${p.to}*\n`;
       });
     }
-    navigator.clipboard.writeText(msg);
-    alert("¡Mensaje copiado para WhatsApp!");
-  };
 
+    msg += `\n*¡Con estos pagos ya quedamos todos en $0!* 🏁\n`;
+    msg += `\n_Resumen generado por Cuentas Claras_`;
+
+    navigator.clipboard.writeText(msg);
+    alert("¡Resumen redactado y copiado para WhatsApp!");
+  };
+  
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
