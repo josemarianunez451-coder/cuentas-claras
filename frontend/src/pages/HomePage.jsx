@@ -1,6 +1,6 @@
 // frontend/src/pages/HomePage.jsx
 import { Link } from "react-router-dom";
-import { CheckCircle2, Users2, Smartphone, BarChart3, Zap } from "lucide-react";
+import { CheckCircle2, Users2, Smartphone, BarChart3, Zap, DollarSign  } from "lucide-react";
 
 const HomePage = () => {
   return (

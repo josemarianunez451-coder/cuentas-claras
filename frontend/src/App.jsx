@@ -2,12 +2,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // Añadimos Navigate
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
-import Layout from './components/layout';
+import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
 import SignInPage from './pages/SignInPage';
 import SignUpPage from './pages/SignUpPage';
 import GroupPage from './pages/GroupPage';
+import HowItWorks from './pages/HowItWorks';
 
 function App() {
   return (
@@ -43,7 +44,8 @@ function App() {
 
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/sign-up" element={<SignUpPage />} />
-          
+          <Route path="/how-it-works" element={<HowItWorks />} />
+
           {/* Opcional: Una ruta para manejar errores 404 dentro de React */}
           <Route path="*" element={<div className="text-center py-10">Página no encontrada</div>} />
         </Routes>
