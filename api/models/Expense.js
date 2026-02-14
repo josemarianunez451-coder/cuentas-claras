@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 const ExpenseSchema = new mongoose.Schema({
   description: { type: String, required: true, trim: true },
   amount: { type: Number, required: true },
+  category: { 
+    type: String, 
+    enum: ['Comida', 'Transporte', 'Vivienda', 'Entretenimiento', 'Otros'], 
+    default: 'Otros' 
+  }, 
   paidBy: { type: String, required: true }, 
   groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
   date: { type: Date, default: Date.now },

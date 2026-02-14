@@ -10,13 +10,14 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.56.2",
+    "@tailwindcss/vite": "^4.0.0",
     "axios": "^1.7.9",
     "lucide-react": "^0.460.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
-    "tailwindcss": "^4.0.0",
-    "@tailwindcss/vite": "^4.0.0"
+    "recharts": "^3.7.0",
+    "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
